@@ -15,18 +15,20 @@ get_grandparent_pid() {
     echo $grandparent_pid
 }
 
-# Function to find the PID of a process matching a specific pattern
-get_pid_by_pattern() {
+# Function to find the PID of a process matching a specific pattern owned by a user
+get_pid_by_pattern_and_user() {
     local pattern=$1
-    local pid=$(pgrep -f "$pattern")
+    local user=$2
+    local pid=$(pgrep -u $user -f "$pattern")
     echo $pid
 }
 
 # Main function to check if grandparent PID of all grandchild PIDs match the PID of a process matching the pattern
 check_grandparent_pid_match() {
     local pattern=$1
-    local grandchild_pids=$(pgrep -P 1)  # Get all direct child PIDs
-    local agent_pid=$(get_pid_by_pattern "$pattern")  # Get the PID of process matching the pattern
+    local user=$2
+    local grandchild_pids=$(pgrep -u $user -P 1)  # Get all direct child PIDs owned by the user
+    local agent_pid=$(get_pid_by_pattern_and_user "$pattern" "$user")  # Get the PID of process matching the pattern owned by the user
 
     # Loop through each grandchild PID
     for pid in $grandchild_pids; do
@@ -42,4 +44,5 @@ check_grandparent_pid_match() {
 
 # Usage example
 pattern="agent.jar"
-check_grandparent_pid_match "$pattern"
+user="ejen"
+check_grandparent_pid_match "$pattern" "$user"
